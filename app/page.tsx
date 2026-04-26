@@ -263,7 +263,7 @@ export default function Page() {
                         x={-375 + offset.x}
                         y={-375 + offset.y}
                         clipPath={`url(#clip-${i})`}
-                        preserveAspectRatio="xMidYMid slice"
+                        preserveAspectRatio="xMidYMid meet"
                         style={{ cursor: "grab", pointerEvents: "all" }}
                         onPointerDown={(ev) => {
                           ev.preventDefault();
