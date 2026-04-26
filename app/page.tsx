@@ -24,7 +24,7 @@ export default function Page() {
   const radius = 300;
   const innerRadius = 60;
 
-  // 📡 Scryfall
+  // 📡 Scryfall API
   async function fetchCard(archetype: string) {
     try {
       const res = await fetch(
@@ -138,7 +138,8 @@ export default function Page() {
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
   }
-  // 🚀 EXPORT PNG (FIXATO VERO)
+
+  // 🚀 EXPORT PNG
   async function exportPNG() {
     const node = document.querySelector("svg") as unknown as HTMLElement;
     if (!node) return;
@@ -155,15 +156,21 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 text-gray-900">
-      <h1 className="text-2xl font-bold mb-6">
-        MTG Meta Dashboard Pro
-      </h1>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-200 p-6 text-gray-900">
 
-      <div className="grid grid-cols-3 gap-4">
+      {/* HEADER */}
+      <div className="max-w-6xl mx-auto mb-6">
+        <h1 className="text-3xl font-bold">MTG Meta Dashboard Pro</h1>
+        <p className="text-gray-600">
+          Build & visualize your meta in real time
+        </p>
+      </div>
+
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {/* INPUT */}
-        <div className="bg-white p-4 rounded-xl border">
+        <div className="bg-white p-5 rounded-2xl shadow border">
+
           <h2 className="font-semibold mb-3">Add Archetype</h2>
 
           <input
@@ -182,19 +189,18 @@ export default function Page() {
 
           <button
             onClick={addEntry}
-            className="w-full bg-blue-600 text-white p-2 rounded"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded"
           >
-            Add
+            Add Deck
           </button>
 
           <div className="mt-4 space-y-2 text-sm">
             {entries.map((e, i) => (
-              <div key={i} className="flex justify-between items-center">
+              <div key={i} className="flex justify-between items-center bg-gray-50 p-2 rounded">
                 <span>{e.name}</span>
 
                 <div className="flex gap-2 items-center">
-                  <span>{e.players}</span>
-
+                  <span className="font-semibold">{e.players}</span>
                   <button
                     onClick={() => removeEntry(i)}
                     className="text-red-500 font-bold"
@@ -205,79 +211,83 @@ export default function Page() {
               </div>
             ))}
           </div>
+
         </div>
 
         {/* CHART */}
-        <div className="col-span-2 bg-white p-4 rounded-xl border flex flex-col items-center">
-          <h2 className="font-semibold mb-3">Meta Breakdown</h2>
+        <div className="md:col-span-2 bg-white p-5 rounded-2xl shadow border flex flex-col items-center">
 
-          <button
-            onClick={exportPNG}
-            className="mb-3 px-4 py-2 bg-green-600 text-white rounded"
-          >
-            Export PNG
-          </button>
+          <div className="flex items-center justify-between w-full mb-3">
+            <h2 className="font-semibold">Meta Breakdown</h2>
 
-          <svg width={size} height={size}>
+            <button
+              onClick={exportPNG}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
+            >
+              Export PNG
+            </button>
+          </div>
 
-            <defs>
-              {angles.map((e, i) => (
-                <clipPath key={i} id={`clip-${i}`}>
-                  <path d={arc(e.start, e.end)} />
-                </clipPath>
-              ))}
-            </defs>
+          <div className="w-full overflow-auto flex justify-center">
 
-            {angles.map((e, i) => {
-              const offset = e.offset || { x: 0, y: 0 };
+            <svg width={size} height={size}>
 
-              return (
-                <g key={i}>
+              <defs>
+                {angles.map((e, i) => (
+                  <clipPath key={i} id={`clip-${i}`}>
+                    <path d={arc(e.start, e.end)} />
+                  </clipPath>
+                ))}
+              </defs>
 
-                  <path
-                    d={arc(e.start, e.end)}
-                    fill={COLORS[i % COLORS.length]}
-                    stroke="#fff"
-                    strokeWidth={2}
-                  />
+              {angles.map((e, i) => {
+                const offset = e.offset || { x: 0, y: 0 };
 
-                  {e.card?.image_uris?.large && (
-                    <image
-                      href={e.card.image_uris.large}
-                      width={750}
-                      height={750}
-                      x={-375 + offset.x}
-                      y={-375 + offset.y}
-                      clipPath={`url(#clip-${i})`}
-                      preserveAspectRatio="xMidYMid meet"
-                      style={{ cursor: "grab" }}
-                      onPointerDown={(ev) => {
-                        ev.preventDefault();
+                return (
+                  <g key={i}>
 
-                        const base = e.offset || { x: 0, y: 0 };
-
-                        startDrag(
-                          i,
-                          ev.clientX,
-                          ev.clientY,
-                          base
-                        );
-                      }}
+                    {/* SLICE */}
+                    <path
+                      d={arc(e.start, e.end)}
+                      fill={COLORS[i % COLORS.length]}
+                      stroke="#fff"
+                      strokeWidth={2}
                     />
-                  )}
 
-                </g>
-              );
-            })}
+                    {/* IMAGE */}
+                    {e.card?.image_uris?.normal && (
+                      <image
+                        href={e.card.image_uris.normal}
+                        width={750}
+                        height={750}
+                        x={-375 + offset.x}
+                        y={-375 + offset.y}
+                        clipPath={`url(#clip-${i})`}
+                        preserveAspectRatio="xMidYMid slice"
+                        style={{ cursor: "grab", pointerEvents: "all" }}
+                        onPointerDown={(ev) => {
+                          ev.preventDefault();
 
-          </svg>
+                          const base = e.offset || { x: 0, y: 0 };
+
+                          startDrag(i, ev.clientX, ev.clientY, base);
+                        }}
+                      />
+                    )}
+
+                  </g>
+                );
+              })}
+
+            </svg>
+          </div>
 
           <div className="text-sm text-gray-500 mt-3">
             Total Players: {total}
           </div>
+
         </div>
       </div>
     </div>
   );
 }
-
