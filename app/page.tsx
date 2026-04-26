@@ -138,10 +138,9 @@ export default function Page() {
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
   }
-
   // 🚀 EXPORT PNG (FIXATO VERO)
   async function exportPNG() {
-    const node = document.querySelector("svg") as HTMLElement;
+    const node = document.querySelector("svg") as unknown as HTMLElement;
     if (!node) return;
 
     const dataUrl = await toPng(node, {
